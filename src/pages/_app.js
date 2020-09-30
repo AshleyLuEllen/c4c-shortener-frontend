@@ -1,6 +1,7 @@
 import React from 'react';
 import { Provider } from 'react-redux';
-import { buildStore } from '../util/redux';
+import { buildStore } from '../redux/redux';
+import { PersistGate } from 'redux-persist/integration/react'
 
 import Head from 'next/head';
 import { CssBaseline } from '@material-ui/core';
@@ -8,8 +9,10 @@ import { FoodTruckThemeProvider } from '../util/theme';
 
 import "./styles.css";
 
-let initialState = {};
-let store = buildStore(initialState);
+let initialState = {
+    
+};
+let {store, persistor} = buildStore(initialState);
 
 const FoodTruckApp = ({ Component, pageProps }) => {
     React.useEffect(() => {
@@ -22,17 +25,19 @@ const FoodTruckApp = ({ Component, pageProps }) => {
 
     return (
         <Provider store={ store }>
-            <Head>
-                <title>My page</title>
-                <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
-            </Head>
+            <PersistGate loading={null} persistor={persistor}>
+                <Head>
+                    <title>My page</title>
+                    <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
+                </Head>
 
-            <FoodTruckThemeProvider>
-                {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-                <CssBaseline />
+                <FoodTruckThemeProvider>
+                    {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+                    <CssBaseline />
 
-                <Component {...pageProps} />
-            </FoodTruckThemeProvider>
+                    <Component {...pageProps} />
+                </FoodTruckThemeProvider>
+            </PersistGate>
         </Provider>
     )
 

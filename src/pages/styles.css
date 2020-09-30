@@ -1,14 +1,30 @@
-.login-form {
-    margin: 0 auto;
-    display: block;
+.login-card {
+    margin: 100px auto;
     text-align: center;
+    max-width: 400px;
 }
 
-.login-form-details {
-    text-align: right;
-    margin: 0 auto;
+.login-input {
+    width: 40ch;
+    margin: 10px !important;
 }
 
-.login-submit-button {
-    margin: 5px;
+.login-failed-alert {
+    text-align: left;
+}
+
+.button-progress-container {
+    position: relative;
+}
+
+.button-progress {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -12px;
+    margin-left: -12px;
+}
+
+body {
+    padding: 0px 20px;
 }

@@ -3,6 +3,15 @@ const withTM = require('next-transpile-modules')(['lodash-es', '@bessemer/corner
 const { parsed: localEnv } = require('dotenv').config();
 
 module.exports = withPlugins([withTM], {
+    async redirects() {
+        return [
+            {
+                source: "/",
+                destination: "/links",
+                permanent: true
+            }
+        ]
+    },
     distDir: 'build',
     webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
         config.plugins.push(new webpack.EnvironmentPlugin(localEnv));
