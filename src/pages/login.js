@@ -42,7 +42,7 @@ function LoginPage(props) {
                 loginSuccessful()
             })
             .catch(err => {
-                dispatch(props.authLogout());
+                dispatch(props.authLogout(false));
                 setLoginFailed(true);
                 setCurrentlySubmitting(false);
             });
@@ -69,6 +69,12 @@ function LoginPage(props) {
                                 Double-check your email and password.
                             </Alert>
                         </Fade>}
+                        {props.auth.wasLoggedOut && <Fade className="login-failed-alert" in={true}>
+                            <Alert severity="error">
+                                <AlertTitle><strong>You were logged out</strong></AlertTitle>
+                                This is likely just due to a long period of inactivity.
+                            </Alert>
+                        </Fade>}
                     </CardContent>
                 </Card>
             </Fade>
@@ -78,8 +84,8 @@ function LoginPage(props) {
 
 
 function mapStateToProps(state) {
-  const { auth } = state
-  return { auth }
+  const { auth } = state;
+  return { auth };
 }
 
 const mapDispatchToProps = {

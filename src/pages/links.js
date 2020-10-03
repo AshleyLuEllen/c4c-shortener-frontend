@@ -78,7 +78,7 @@ class LinksPage extends React.Component {
                 this.setState({loading: false});
             })
             .catch(err => {
-                this.props.authLogout();
+                this.props.authLogout(true);
                 this.props.router.push('/login');
             });
     }

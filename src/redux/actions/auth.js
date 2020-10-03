@@ -9,8 +9,9 @@ export function login(email, password) {
     }
 }
 
-export function logout() {
+export function logout(wasLoggedOut) {
     return {
-        type: ACTION_LOGOUT
+        type: ACTION_LOGOUT,
+        wasLoggedOut
     }
 }
