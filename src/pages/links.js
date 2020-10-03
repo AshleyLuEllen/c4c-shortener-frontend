@@ -1,11 +1,33 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
-import { Divider, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper } from '@material-ui/core';
+import { Divider, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper,
+ Dialog, DialogActions, DialogTitle, DialogContent, DialogContentText, TextField, Button, ButtonGroup, Link as MaterialLink } from '@material-ui/core';
+import DeleteIcon from '@material-ui/icons/Delete';
+import EditIcon from '@material-ui/icons/Edit';
+import SaveIcon from '@material-ui/icons/Save';
 import { logout as authLogout } from '../redux/actions/auth';
+import { openEditor, closeEditor, changeEditorPrefill } from '../redux/actions/editor';
 import { connect } from 'react-redux';
 import { withRouter } from 'next/router'
+import { format } from 'date-fns'
 require('dotenv').config();
+
+
+function editLink(link, actionCreators) {
+    actionCreators[0](link);
+    actionCreators[1]();
+}
+
+function deleteLink(link) {
+    
+}
+
+const TableButton = (props) => {
+    return (
+        <MaterialLink onClick={()=>props.func(props.link, props.actionCreators)} color={props.color}>{props.name}</MaterialLink>
+    );
+}
 
 class LinksPage extends React.Component {
     constructor(props) {
@@ -15,10 +37,30 @@ class LinksPage extends React.Component {
             linkData: [],
             loading: true
         }
+
+        this.handleEditorExit = this.handleEditorExit.bind(this);
+        this.handleEditorSubmit = this.handleEditorSubmit.bind(this);
+    }
+
+    formatDate(dateStr) {
+        return format(new Date(dateStr), "M/d/yy H:mm:ss");
+    }
+
+    openDialog(link) {
+        this.setState({
+            editorOpen: true
+        });
+    }
+
+    handleEditorExit() {
+        this.props.closeEditor();
+    }
+
+    handleEditorSubmit() {
+        this.props.closeEditor();
     }
 
     componentDidMount() {
-        console.log(this.props);
         if (!this.props.auth.isLoggedIn) {
             this.props.router.push("/login");
             return;
@@ -32,11 +74,12 @@ class LinksPage extends React.Component {
                 }
             })
             .then(res => {
-                this.setState({linkData: res.data})
-                this.setState({loading: false})
+                this.setState({linkData: res.data});
+                this.setState({loading: false});
             })
             .catch(err => {
-                alert(err);
+                this.props.authLogout();
+                this.props.router.push('/login');
             });
     }
   
@@ -56,6 +99,7 @@ class LinksPage extends React.Component {
                         <TableCell>Creator</TableCell>
                         <TableCell>Creation&nbsp;Date</TableCell>
                         <TableCell>Expiry&nbsp;Date</TableCell>
+                        <TableCell>Enabled</TableCell>
                         <TableCell align="right">Actions</TableCell>
                     </TableRow>
                     </TableHead>
@@ -65,30 +109,59 @@ class LinksPage extends React.Component {
                             <TableCell>{row.namespace}</TableCell>
                             <TableCell>{row.shortCode}</TableCell>
                             <TableCell>{row.redirectURL}</TableCell>
-                            <TableCell>{row.owner}</TableCell>
-                            <TableCell>{row.created}</TableCell>
-                            <TableCell>{row.expiry}</TableCell>
+                            <TableCell>{row.owner ? row.owner.firstName + " " + row.owner.lastName : "SYSTEM"}</TableCell>
+                            <TableCell>{row.created && this.formatDate(row.created)}</TableCell>
+                            <TableCell>{row.expiry && this.formatDate(row.expiry)}</TableCell>
+                            <TableCell>{row.enabled ? "Y" : "N"}</TableCell>
                             <TableCell align="right">
-                                Edit
-                                Delete
+                                <TableButton link={row} func={editLink} actionCreators={[this.props.changeEditorPrefill, this.props.openEditor]} color="primary" name="Edit"/> &nbsp;
+                                <TableButton link={row} func={deleteLink} color="secondary" name="Remove"/> 
                             </TableCell>
                        </TableRow>
                     ))}
                     </TableBody>
                 </Table>
                 </TableContainer>
+                <Dialog open={this.props.editor.editorOpen} onClose={this.handleEditorExit} aria-labelledby="form-dialog-title">
+                    <DialogTitle id="form-dialog-title">Subscribe</DialogTitle>
+                    <DialogContent>
+                    <DialogContentText>
+                        To subscribe to this website, please enter your email address here. We will send updates
+                        occasionally.
+                    </DialogContentText>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        id="name"
+                        label="Email Address"
+                        type="email"
+                        fullWidth
+                    />
+                    </DialogContent>
+                    <DialogActions>
+                    <Button onClick={this.handleEditorExit} color="primary">
+                        Cancel
+                    </Button>
+                    <Button onClick={this.handleEditorSubmit} color="primary" startIcon={<SaveIcon />}>
+                        {this.state.editorNewLink ? "Create Link" : "Save Changes"}
+                    </Button>
+                    </DialogActions>
+                </Dialog>
             </div>
         );
     }
 }
 
 function mapStateToProps(state) {
-    const { auth } = state
-    return { auth }
+    const { auth, editor } = state
+    return { auth, editor }
 }
   
 const mapDispatchToProps = {
-    authLogout
+    authLogout,
+    openEditor,
+    closeEditor,
+    changeEditorPrefill
 }
   
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(LinksPage));
