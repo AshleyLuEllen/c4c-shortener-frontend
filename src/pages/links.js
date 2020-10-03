@@ -7,10 +7,13 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import SaveIcon from '@material-ui/icons/Save';
 import { logout as authLogout } from '../redux/actions/auth';
-import { openEditor, closeEditor, changeEditorPrefill } from '../redux/actions/editor';
+import { openEditor, closeEditor, changeEditorPrefill, updateHandled } from '../redux/actions/editor';
 import { connect } from 'react-redux';
-import { withRouter } from 'next/router'
-import { format } from 'date-fns'
+import { withRouter } from 'next/router';
+import { format } from 'date-fns';
+
+import LinkEditor from '../components/editor';
+
 require('dotenv').config();
 
 
@@ -37,9 +40,6 @@ class LinksPage extends React.Component {
             linkData: [],
             loading: true
         }
-
-        this.handleEditorExit = this.handleEditorExit.bind(this);
-        this.handleEditorSubmit = this.handleEditorSubmit.bind(this);
     }
 
     formatDate(dateStr) {
@@ -52,20 +52,7 @@ class LinksPage extends React.Component {
         });
     }
 
-    handleEditorExit() {
-        this.props.closeEditor();
-    }
-
-    handleEditorSubmit() {
-        this.props.closeEditor();
-    }
-
-    componentDidMount() {
-        if (!this.props.auth.isLoggedIn) {
-            this.props.router.push("/login");
-            return;
-        }
-        
+    fetchData(callback = () => {}) {
         axios
             .get(`${process.env.API_URL}/admin/links`, {
                 auth: {
@@ -76,11 +63,29 @@ class LinksPage extends React.Component {
             .then(res => {
                 this.setState({linkData: res.data});
                 this.setState({loading: false});
+                callback();
             })
             .catch(err => {
                 this.props.authLogout(true);
                 this.props.router.push('/login');
             });
+    }
+    
+    componentDidMount() {
+        if (!this.props.auth.isLoggedIn) {
+            this.props.router.push("/login");
+            return;
+        }
+        
+        this.fetchData();
+    }
+
+    componentDidUpdate(prevProps) {
+        if (this.props.editor.needToUpdate) {
+            this.fetchData(() => {
+                this.props.updateHandled();
+            });
+        }
     }
   
     render() {
@@ -122,31 +127,7 @@ class LinksPage extends React.Component {
                     </TableBody>
                 </Table>
                 </TableContainer>
-                <Dialog open={this.props.editor.editorOpen} onClose={this.handleEditorExit} aria-labelledby="form-dialog-title">
-                    <DialogTitle id="form-dialog-title">Subscribe</DialogTitle>
-                    <DialogContent>
-                    <DialogContentText>
-                        To subscribe to this website, please enter your email address here. We will send updates
-                        occasionally.
-                    </DialogContentText>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        id="name"
-                        label="Email Address"
-                        type="email"
-                        fullWidth
-                    />
-                    </DialogContent>
-                    <DialogActions>
-                    <Button onClick={this.handleEditorExit} color="primary">
-                        Cancel
-                    </Button>
-                    <Button onClick={this.handleEditorSubmit} color="primary" startIcon={<SaveIcon />}>
-                        {this.state.editorNewLink ? "Create Link" : "Save Changes"}
-                    </Button>
-                    </DialogActions>
-                </Dialog>
+                <LinkEditor open={this.props.editor.editorOpen}/>
             </div>
         );
     }
@@ -161,7 +142,8 @@ const mapDispatchToProps = {
     authLogout,
     openEditor,
     closeEditor,
-    changeEditorPrefill
+    changeEditorPrefill,
+    updateHandled
 }
   
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(LinksPage));

@@ -1,8 +1,9 @@
-import { OPEN_EDITOR, CHANGE_EDITOR_PREFILL, CLOSE_EDITOR } from '../actions/editor';
+import { OPEN_EDITOR, CHANGE_EDITOR_PREFILL, CLOSE_EDITOR, LINK_UPDATED, LINK_UPDATE_HANDLED } from '../actions/editor';
 
 const initialState = {
     editorOpen: false,
-    linkPrefill: null
+    linkPrefill: null,
+    needToUpdate: false
 }
 
 export function reducer(state = initialState, action) {
@@ -22,6 +23,16 @@ export function reducer(state = initialState, action) {
             return {
                 ...state,
                 linkPrefill: action.link 
+            }
+        case LINK_UPDATED:
+            return {
+                ...state,
+                needToUpdate: true
+            }
+        case LINK_UPDATE_HANDLED:
+            return {
+                ...state,
+                needToUpdate: false
             }
         default:
             return state;
