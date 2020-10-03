@@ -5,7 +5,7 @@ import { PersistGate } from 'redux-persist/integration/react'
 
 import Head from 'next/head';
 import { CssBaseline } from '@material-ui/core';
-import { FoodTruckThemeProvider } from '../util/theme';
+import { LinkShortenerThemeProvider } from '../util/theme';
 
 import "./styles.css";
 
@@ -31,12 +31,12 @@ const FoodTruckApp = ({ Component, pageProps }) => {
                     <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
                 </Head>
 
-                <FoodTruckThemeProvider>
+                <LinkShortenerThemeProvider>
                     {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
                     <CssBaseline />
 
                     <Component {...pageProps} />
-                </FoodTruckThemeProvider>
+                </LinkShortenerThemeProvider>
             </PersistGate>
         </Provider>
     )
